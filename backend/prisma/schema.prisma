@@ -1,0 +1,83 @@
+// Prisma Schema for Love Logger
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  passwordHash  String   @map("password_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  events        Event[]
+  vacations     Vacation[]
+  timelineEvents TimelineEvent[]
+
+  @@map("users")
+}
+
+model Event {
+  id           String   @id @default(uuid())
+  latitude     Float
+  longitude    Float
+  eventDate    DateTime @map("event_date")
+  note         String
+  nearestCity  String?  @map("nearest_city")
+  createdById  String   @map("created_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  createdBy    User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([eventDate])
+  @@index([createdById])
+  @@map("events")
+}
+
+model Vacation {
+  id            String   @id @default(uuid())
+  location      String
+  startDate     DateTime @map("start_date")
+  durationDays  Int      @map("duration_days")
+  photoUrl      String?  @map("photo_url")
+  createdById   String   @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([startDate])
+  @@index([createdById])
+  @@map("vacations")
+}
+
+model TimelineEvent {
+  id           String   @id @default(uuid())
+  eventDate    DateTime @map("event_date")
+  description  String
+  createdById  String   @map("created_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  createdBy    User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([eventDate])
+  @@index([createdById])
+  @@map("timeline_events")
+}
+
+model Score {
+  id        String   @id @default(uuid())
+  heScore   Int      @default(0) @map("he_score")
+  sheScore  Int      @default(0) @map("she_score")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("scores")
+}

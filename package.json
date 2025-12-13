@@ -1,0 +1,45 @@
+{
+  "name": "love-logger",
+  "version": "1.0.0",
+  "description": "A personal relationship tracker with real-time sync",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:studio": "cd backend && npm run db:studio",
+    "clean": "rm -rf node_modules backend/node_modules frontend/node_modules backend/dist frontend/dist",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:restart": "docker-compose restart",
+    "docker:clean": "docker-compose down -v",
+    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+    "backup": "./scripts/backup.sh",
+    "restore": "./scripts/restore.sh",
+    "backup:list": "ls -la ./backups/*.tar.gz 2>/dev/null || echo 'No backups found'",
+    "change-password": "./scripts/change-password.sh",
+    "production:setup": "cp .env.production .env && echo 'Please edit .env with your production values before running docker:up'",
+    "production:deploy": "docker-compose build --no-cache && docker-compose up -d",
+    "production:logs": "docker-compose logs -f",
+    "production:stop": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
