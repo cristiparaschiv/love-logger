@@ -45,13 +45,35 @@ export class FileService {
       const filePath = path.join(dirPath, filename);
 
       // Process image with sharp (automatically handles HEIC/HEIF conversion)
-      await sharp(file.buffer)
-        .resize(maxWidth, undefined, {
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
-        .jpeg({ quality, progressive: true })
-        .toFile(filePath);
+      try {
+        logger.info('Starting Sharp processing...');
+        const metadata = await sharp(file.buffer).metadata();
+        logger.info('Image metadata:', {
+          format: metadata.format,
+          width: metadata.width,
+          height: metadata.height,
+          space: metadata.space,
+          channels: metadata.channels,
+          depth: metadata.depth
+        });
+
+        await sharp(file.buffer)
+          .resize(maxWidth, undefined, {
+            fit: 'inside',
+            withoutEnlargement: true,
+          })
+          .jpeg({ quality, progressive: true })
+          .toFile(filePath);
+
+        logger.info('Sharp processing complete');
+      } catch (sharpError) {
+        logger.error('Sharp processing error:', {
+          error: sharpError,
+          message: sharpError instanceof Error ? sharpError.message : 'Unknown error',
+          stack: sharpError instanceof Error ? sharpError.stack : undefined
+        });
+        throw new Error(`Image processing failed: ${sharpError instanceof Error ? sharpError.message : 'Unknown error'}`);
+      }
 
       // Return relative path (for storage in database)
       const relativePath = `/${directory}/${filename}`;
@@ -59,8 +81,12 @@ export class FileService {
 
       return relativePath;
     } catch (error) {
-      logger.error('Failed to process and save image:', error);
-      throw new Error('Failed to process image');
+      logger.error('Failed to process and save image:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw new Error(error instanceof Error ? error.message : 'Failed to process image');
     }
   }
 
@@ -103,6 +129,8 @@ export class FileService {
 
   /**
    * Validate file is an image
+   * iOS may send HEIC files with empty or incorrect MIME types
+   * Check both MIME type and file extension
    */
   validateImageFile(file: Express.Multer.File): boolean {
     const allowedMimeTypes = [
@@ -114,7 +142,21 @@ export class FileService {
       'image/heif',
       'image/avif'
     ];
-    return allowedMimeTypes.includes(file.mimetype);
+
+    const fileName = file.originalname.toLowerCase();
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.bmp', '.svg', '.tiff', '.tif', '.avif'];
+    const hasImageExtension = imageExtensions.some(ext => fileName.endsWith(ext));
+    const hasImageMimeType = allowedMimeTypes.includes(file.mimetype);
+
+    logger.info('File validation:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      hasImageMimeType,
+      hasImageExtension
+    });
+
+    // Accept if either MIME type is valid OR file has image extension
+    return hasImageMimeType || hasImageExtension;
   }
 
   /**

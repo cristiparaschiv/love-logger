@@ -20,11 +20,25 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (_req, file, cb) => {
-    // Accept images only
-    if (file.mimetype.startsWith('image/')) {
+    // iOS may send HEIC files with empty or incorrect MIME types
+    // Check both MIME type and file extension
+    const isImageMimeType = file.mimetype && file.mimetype.startsWith('image/');
+    const fileName = file.originalname.toLowerCase();
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.bmp', '.svg', '.tiff', '.tif'];
+    const hasImageExtension = imageExtensions.some(ext => fileName.endsWith(ext));
+
+    console.log('Multer file filter:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      isImageMimeType,
+      hasImageExtension
+    });
+
+    // Accept if either MIME type is image/* OR file has image extension
+    if (isImageMimeType || hasImageExtension) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error(`Only image files are allowed. Received: ${file.mimetype} (${file.originalname})`));
     }
   },
 });

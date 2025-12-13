@@ -28,13 +28,27 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
       lastModified: file.lastModified
     });
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      const errorMsg = `Invalid file type: ${file.type}. Please select an image file.`;
+    // Validate file type - iOS may send empty or incorrect MIME types for HEIC/images
+    // So we check both MIME type and file extension
+    const isImageMimeType = file.type.startsWith('image/');
+    const fileExtension = file.name.toLowerCase().split('.').pop() || '';
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'bmp', 'svg', 'tiff', 'tif'];
+    const hasImageExtension = imageExtensions.includes(fileExtension);
+
+    // Accept if either MIME type is image/* OR file has image extension
+    // This handles iOS sending HEIC with empty/wrong MIME type
+    if (!isImageMimeType && !hasImageExtension) {
+      const errorMsg = `Invalid file type: ${file.type} (${file.name}). Please select an image file.`;
       console.error(errorMsg);
       setError('Please select an image file');
       return;
     }
+
+    console.log('File validation passed:', {
+      isImageMimeType,
+      hasImageExtension,
+      fileExtension
+    });
 
     // Validate file size (10MB max)
     const maxSize = 10 * 1024 * 1024;

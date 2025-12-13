@@ -55,6 +55,19 @@ export const createVacation = asyncHandler(async (req: Request, res: Response) =
   // Get uploaded file if present
   const photoFile = req.file;
 
+  if (photoFile) {
+    logger.info('Photo file received:', {
+      fieldname: photoFile.fieldname,
+      originalname: photoFile.originalname,
+      encoding: photoFile.encoding,
+      mimetype: photoFile.mimetype,
+      size: photoFile.size,
+      bufferLength: photoFile.buffer?.length
+    });
+  } else {
+    logger.info('No photo file in request');
+  }
+
   // Create vacation
   const vacation = await vacationService.createVacation(
     {
@@ -100,6 +113,19 @@ export const updateVacation = asyncHandler(async (req: Request, res: Response) =
 
   // Get uploaded file if present
   const photoFile = req.file;
+
+  if (photoFile) {
+    logger.info('Photo file received for update:', {
+      fieldname: photoFile.fieldname,
+      originalname: photoFile.originalname,
+      encoding: photoFile.encoding,
+      mimetype: photoFile.mimetype,
+      size: photoFile.size,
+      bufferLength: photoFile.buffer?.length
+    });
+  } else {
+    logger.info('No photo file in update request');
+  }
 
   // Update vacation
   const vacation = await vacationService.updateVacation(id, updateData, photoFile);
