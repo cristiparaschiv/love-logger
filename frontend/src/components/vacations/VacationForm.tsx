@@ -23,21 +23,6 @@ export const VacationForm = ({ isOpen, onClose, onSubmit, vacation, isLoading = 
   const [photo, setPhoto] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // DEBUG: Track photo state changes
-  useEffect(() => {
-    console.log('=== VACATION FORM PHOTO STATE CHANGED ===');
-    console.log('Photo:', photo);
-    if (photo) {
-      console.log('Photo details:', {
-        name: photo.name,
-        type: photo.type,
-        size: photo.size,
-      });
-    } else {
-      console.log('Photo is NULL');
-    }
-  }, [photo]);
-
   useEffect(() => {
     if (vacation) {
       // Edit mode - populate form with existing vacation data
@@ -94,38 +79,10 @@ export const VacationForm = ({ isOpen, onClose, onSubmit, vacation, isLoading = 
         ...(photo && { photo }),
       };
 
-      // DEBUG: Log photo state before submission
-      console.log('=== VACATION FORM SUBMIT DEBUG ===');
-      console.log('Photo state:', photo);
-      console.log('Photo exists?', !!photo);
-      if (photo) {
-        console.log('Photo details:', {
-          name: photo.name,
-          type: photo.type,
-          size: photo.size,
-          lastModified: photo.lastModified,
-        });
-      }
-      console.log('Submit data keys:', Object.keys(submitData));
-      console.log('Submit data contains photo?', 'photo' in submitData);
-      console.log('Full submit data:', submitData);
-
-      // Show alert with photo status
-      const photoStatus = photo
-        ? `YES - ${photo.name} (${(photo.size / 1024).toFixed(2)} KB)`
-        : 'NO - No photo selected';
-      alert(`SUBMITTING FORM\n\nPhoto: ${photoStatus}\n\nLocation: ${formData.location}`);
-
       await onSubmit(submitData);
-
-      // DEBUG: Log after successful submission
-      console.log('Form submitted successfully');
-      alert('FORM SUBMITTED - Check console for response details');
-
       onClose();
     } catch (error) {
       console.error('Error submitting vacation:', error);
-      alert(`SUBMISSION ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -157,35 +114,6 @@ export const VacationForm = ({ isOpen, onClose, onSubmit, vacation, isLoading = 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={vacation ? 'Edit Vacation' : 'Add New Vacation'} size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* DEBUG PANEL - Shows current photo state */}
-        <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-4">
-          <div className="flex items-start gap-2">
-            <svg className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-blue-900 mb-2">FORM STATE DEBUG</h4>
-              <div className="text-xs text-blue-800 space-y-1 font-mono">
-                <div>Photo State: <strong>{photo ? 'HAS PHOTO' : 'NO PHOTO'}</strong></div>
-                {photo && (
-                  <>
-                    <div>File Name: <strong>{photo.name}</strong></div>
-                    <div>File Type: <strong>{photo.type}</strong></div>
-                    <div>File Size: <strong>{(photo.size / 1024).toFixed(2)} KB</strong></div>
-                  </>
-                )}
-                <div className="pt-2 border-t border-blue-300 mt-2">
-                  When you click submit, watch for alerts showing:
-                  <ul className="list-disc ml-4 mt-1">
-                    <li>Form submission status</li>
-                    <li>API response with photoUrl</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Location */}
         <div>
           <Input
