@@ -29,16 +29,54 @@ class VacationService {
   }
 
   async createVacation(data: CreateVacationRequest): Promise<Vacation> {
+    // DEBUG: Log incoming data
+    console.log('=== VACATION SERVICE CREATE DEBUG ===');
+    console.log('Incoming data:', data);
+    console.log('Data has photo?', !!data.photo);
+    if (data.photo) {
+      console.log('Photo details:', {
+        name: data.photo.name,
+        type: data.photo.type,
+        size: data.photo.size,
+      });
+    }
+
     const formData = new FormData();
     formData.append('location', data.location);
     formData.append('startDate', data.startDate);
     formData.append('durationDays', data.durationDays.toString());
 
     if (data.photo) {
+      console.log('Appending photo to FormData...');
       formData.append('photo', data.photo);
+      console.log('Photo appended successfully');
+    } else {
+      console.log('WARNING: No photo in data, skipping photo append');
     }
 
+    // DEBUG: Log FormData contents
+    console.log('FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}:`, {
+          type: 'File',
+          name: value.name,
+          size: value.size,
+          mimeType: value.type,
+        });
+      } else {
+        console.log(`  ${key}:`, value);
+      }
+    }
+
+    console.log('Sending POST request to /vacations...');
     const response = await apiService.post<VacationResponse>('/vacations', formData);
+
+    console.log('Response received:', response);
+    console.log('Response vacation photoUrl:', response.vacation.photoUrl);
+
+    // Show alert with response status
+    alert(`API RESPONSE\n\nPhotoUrl: ${response.vacation.photoUrl || 'NULL - No photo saved!'}\n\nLocation: ${response.vacation.location}`);
 
     return response.vacation;
   }

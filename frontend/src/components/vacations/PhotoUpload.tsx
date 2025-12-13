@@ -98,7 +98,14 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
     };
     reader.readAsDataURL(file);
 
+    // DEBUG: Log when calling onPhotoSelect
+    console.log('PhotoUpload: Calling onPhotoSelect with file:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
     onPhotoSelect(file);
+    console.log('PhotoUpload: onPhotoSelect called successfully');
   };
 
   const handleRemove = () => {
