@@ -9,38 +9,62 @@ interface PhotoUploadProps {
 export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }: PhotoUploadProps) => {
   const [preview, setPreview] = useState<string | null>(currentPhotoUrl || null);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState<boolean>(true); // Toggle to show/hide debug info
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setError(null);
+    setDebugInfo(null);
 
     if (!file) {
       setPreview(currentPhotoUrl || null);
       onPhotoSelect(null);
+      setDebugInfo('No file selected (cleared)');
       return;
     }
 
-    console.log('File selected:', {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      lastModified: file.lastModified
-    });
+    // Collect debug information
+    const fileExtension = file.name.toLowerCase().split('.').pop() || '';
+    const isImageMimeType = file.type.startsWith('image/');
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'bmp', 'svg', 'tiff', 'tif'];
+    const hasImageExtension = imageExtensions.includes(fileExtension);
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+
+    const debugData = {
+      fileName: file.name,
+      mimeType: file.type || '(empty)',
+      fileSize: `${sizeMB} MB`,
+      extension: fileExtension || '(none)',
+      isImageMimeType,
+      hasImageExtension,
+      validationPassed: (isImageMimeType || hasImageExtension) && file.size <= 10 * 1024 * 1024,
+    };
+
+    // Create debug message
+    let debugMessage = `FILE SELECTED:\n`;
+    debugMessage += `Name: ${debugData.fileName}\n`;
+    debugMessage += `MIME Type: ${debugData.mimeType}\n`;
+    debugMessage += `Size: ${debugData.fileSize}\n`;
+    debugMessage += `Extension: ${debugData.extension}\n`;
+    debugMessage += `Is Image MIME: ${debugData.isImageMimeType}\n`;
+    debugMessage += `Has Image Extension: ${debugData.hasImageExtension}\n`;
+    debugMessage += `Validation: ${debugData.validationPassed ? 'PASSED' : 'FAILED'}`;
+
+    console.log('File selected:', debugData);
+    setDebugInfo(debugMessage);
+
+    // Show alert for immediate feedback (can see even if UI doesn't update)
+    alert(debugMessage);
 
     // Validate file type - iOS may send empty or incorrect MIME types for HEIC/images
     // So we check both MIME type and file extension
-    const isImageMimeType = file.type.startsWith('image/');
-    const fileExtension = file.name.toLowerCase().split('.').pop() || '';
-    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'bmp', 'svg', 'tiff', 'tif'];
-    const hasImageExtension = imageExtensions.includes(fileExtension);
-
-    // Accept if either MIME type is image/* OR file has image extension
-    // This handles iOS sending HEIC with empty/wrong MIME type
     if (!isImageMimeType && !hasImageExtension) {
       const errorMsg = `Invalid file type: ${file.type} (${file.name}). Please select an image file.`;
       console.error(errorMsg);
       setError('Please select an image file');
+      setDebugInfo(debugMessage + '\n\nERROR: Invalid file type');
       return;
     }
 
@@ -53,10 +77,10 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
     // Validate file size (10MB max)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(2);
       const errorMsg = `File size (${sizeMB}MB) exceeds maximum of 10MB`;
       console.error(errorMsg);
       setError('File size must be less than 10MB');
+      setDebugInfo(debugMessage + '\n\nERROR: File too large');
       return;
     }
 
@@ -65,10 +89,12 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
     reader.onload = (event) => {
       setPreview(event.target?.result as string);
       console.log('Preview created successfully');
+      setDebugInfo(debugMessage + '\n\nPreview created successfully!');
     };
     reader.onerror = (error) => {
       console.error('Error reading file:', error);
       setError('Failed to read file. Please try again.');
+      setDebugInfo(debugMessage + '\n\nERROR: Failed to read file - ' + error);
     };
     reader.readAsDataURL(file);
 
@@ -78,6 +104,7 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
   const handleRemove = () => {
     setPreview(null);
     setError(null);
+    setDebugInfo(null);
     onPhotoSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -90,7 +117,33 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">Photo (Optional)</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">Photo (Optional)</label>
+        <button
+          type="button"
+          onClick={() => setShowDebug(!showDebug)}
+          className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+        >
+          {showDebug ? 'Hide' : 'Show'} Debug
+        </button>
+      </div>
+
+      {/* DEBUG INFO - TEMPORARY FOR iOS DEBUGGING */}
+      {showDebug && debugInfo && (
+        <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <svg className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-yellow-900 mb-1">DEBUG INFO (iOS Upload)</h4>
+              <pre className="text-xs text-yellow-800 whitespace-pre-wrap font-mono bg-yellow-100 p-2 rounded overflow-x-auto">
+{debugInfo}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
 
       {preview ? (
         <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
@@ -151,7 +204,20 @@ export const PhotoUpload = ({ onPhotoSelect, currentPhotoUrl, disabled = false }
         disabled={disabled}
       />
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {/* ERROR MESSAGE - VISIBLE ON SCREEN */}
+      {error && (
+        <div className="bg-red-50 border-2 border-red-400 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <svg className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-red-800">Upload Error</p>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
