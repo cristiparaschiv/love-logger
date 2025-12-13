@@ -70,13 +70,23 @@ class VacationService {
     }
 
     console.log('Sending POST request to /vacations...');
-    const response = await apiService.post<VacationResponse>('/vacations', formData);
+    alert('DEBUG: About to make API call...');
+
+    let response;
+    try {
+      response = await apiService.post<VacationResponse>('/vacations', formData);
+      alert(`DEBUG: API call completed!\n\nResponse: ${JSON.stringify(response, null, 2).substring(0, 500)}`);
+    } catch (apiError: any) {
+      alert(`DEBUG: API CALL FAILED!\n\nError: ${apiError.message}\n\n${JSON.stringify(apiError.response?.data || apiError, null, 2).substring(0, 500)}`);
+      throw apiError;
+    }
 
     console.log('Response received:', response);
-    console.log('Response vacation photoUrl:', response.vacation.photoUrl);
+    console.log('Response vacation photoUrl:', response.vacation?.photoUrl);
 
     // Show alert with response status
-    alert(`API RESPONSE\n\nPhotoUrl: ${response.vacation.photoUrl || 'NULL - No photo saved!'}\n\nLocation: ${response.vacation.location}`);
+    const photoUrl = response.vacation?.photoUrl || 'NULL - No photo saved!';
+    alert(`API RESPONSE\n\nPhotoUrl: ${photoUrl}\n\nLocation: ${response.vacation?.location}`);
 
     return response.vacation;
   }
