@@ -57,7 +57,7 @@ export const Map = () => {
       return;
     }
     setMapCenter([event.latitude, event.longitude]);
-    setMapZoom(13);
+    setMapZoom(16);
   };
 
   // Handle edit event
