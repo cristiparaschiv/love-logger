@@ -1,5 +1,5 @@
 import { apiService } from './api.service';
-import { CheckinTodayResponse, CheckinHistoryEntry, CheckinConfig } from '../types/checkin.types';
+import { CheckinTodayResponse, CheckinHistoryEntry, CheckinConfig, CheckinStats } from '../types/checkin.types';
 
 class CheckinApiService {
   async getToday(): Promise<CheckinTodayResponse> {
@@ -12,6 +12,10 @@ class CheckinApiService {
 
   async getHistory(days: number = 30): Promise<{ entries: CheckinHistoryEntry[] }> {
     return apiService.get<{ entries: CheckinHistoryEntry[] }>(`/checkin/history?days=${days}`);
+  }
+
+  async getStats(days: number = 30): Promise<CheckinStats> {
+    return apiService.get<CheckinStats>(`/checkin/stats?days=${days}`);
   }
 
   async getConfig(): Promise<CheckinConfig> {

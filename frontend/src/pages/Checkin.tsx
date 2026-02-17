@@ -5,7 +5,8 @@ import { MoodPicker } from '../components/checkin/MoodPicker';
 import { QuestionCard } from '../components/checkin/QuestionCard';
 import { RevealCard } from '../components/checkin/RevealCard';
 import { MoodCalendar } from '../components/checkin/MoodCalendar';
-import { Loader2, Send, Clock, History } from 'lucide-react';
+import { MoodTrends } from '../components/checkin/MoodTrends';
+import { Loader2, Send, Clock, History, TrendingUp } from 'lucide-react';
 
 export const Checkin = () => {
   const {
@@ -24,13 +25,13 @@ export const Checkin = () => {
   const [mood, setMood] = useState<number | null>(null);
   const [answer, setAnswer] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [view, setView] = useState<'today' | 'history' | 'trends'>('today');
 
   useEffect(() => {
-    if (showHistory && history.length === 0) {
+    if (view === 'history' && history.length === 0) {
       fetchHistory(30);
     }
-  }, [showHistory, history.length, fetchHistory]);
+  }, [view, history.length, fetchHistory]);
 
   const handleSubmit = async () => {
     if (!mood || !answer.trim()) return;
@@ -57,22 +58,33 @@ export const Checkin = () => {
       <div className="container-app py-6 max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Daily Check-in</h1>
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              showHistory ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <History className="w-4 h-4" />
-            History
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setView(view === 'trends' ? 'today' : 'trends')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                view === 'trends' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              Trends
+            </button>
+            <button
+              onClick={() => setView(view === 'history' ? 'today' : 'history')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                view === 'history' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <History className="w-4 h-4" />
+              History
+            </button>
+          </div>
         </div>
 
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>
         )}
 
-        {!showHistory ? (
+        {view === 'today' && (
           <div className="space-y-5">
             {/* State 3: Both completed — reveal */}
             {bothCompleted && myCheckin && partnerCheckin && question && (
@@ -140,9 +152,11 @@ export const Checkin = () => {
               </>
             )}
           </div>
-        ) : (
-          <MoodCalendar entries={history} />
         )}
+
+        {view === 'trends' && <MoodTrends />}
+
+        {view === 'history' && <MoodCalendar entries={history} />}
       </div>
     </Layout>
   );

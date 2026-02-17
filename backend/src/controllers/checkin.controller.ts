@@ -40,6 +40,15 @@ export const getHistory = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json({ entries: data });
 });
 
+export const getStats = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+  const days = Math.min(parseInt(req.query.days as string) || 30, 365);
+  const data = await checkinService.getStats(userId, days);
+  return res.status(200).json(data);
+});
+
 export const getConfig = asyncHandler(async (_req: Request, res: Response) => {
   const config = await checkinService.getConfig();
   return res.status(200).json(config);

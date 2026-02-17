@@ -32,3 +32,13 @@ export interface CheckinHistoryEntry {
 export interface CheckinConfig {
   notificationHour: number;
 }
+
+export interface CheckinStats {
+  daily: { date: string; myMood: number | null; partnerMood: number | null }[];
+  streak: number;
+  avgMood: { my: number; partner: number };
+  moodMatchPercent: number;
+  perfectDays: number;
+  distribution: { my: Record<string, number>; partner: Record<string, number> };
+  insights: string[];
+}
