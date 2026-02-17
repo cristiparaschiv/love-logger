@@ -29,9 +29,10 @@ export class AuthController {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    res.status(200).json({
-      user: req.user,
-    });
+    const token = req.headers.authorization?.substring(7) || '';
+    const user = await authService.verifyToken(token);
+
+    res.status(200).json({ user });
   });
 
   logout = asyncHandler(async (req: Request, res: Response) => {
