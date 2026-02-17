@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Layout } from '../components/common/Layout';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useWishlist } from '../hooks/useWishlist';
@@ -70,7 +71,7 @@ export const Wishlist = () => {
 
         {!isLoading && items.length === 0 && (
           <div className="text-center py-20 text-gray-500">
-            <p className="text-5xl mb-4">✨</p>
+            <Sparkles className="w-12 h-12 text-primary-400 mx-auto mb-4" />
             <p className="text-lg">Your wishlist is empty. Add your first dream!</p>
           </div>
         )}

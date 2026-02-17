@@ -8,6 +8,7 @@ import { Vacations } from './pages/Vacations';
 import { Timeline } from './pages/Timeline';
 import { Score } from './pages/Score';
 import { Wishlist } from './pages/Wishlist';
+import { Settings } from './pages/Settings';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -28,6 +29,7 @@ function App() {
           <Route path="/timeline" element={<Timeline />} />
           <Route path="/score" element={<Score />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/map" replace />} />

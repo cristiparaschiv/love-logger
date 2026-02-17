@@ -6,7 +6,6 @@ import { AppError, TokenPayload } from '../types/models';
 
 export class AuthService {
   async login(username: string, password: string, rememberMe: boolean = false) {
-    // Find user
     const user = await prisma.user.findUnique({
       where: { username },
     });
@@ -15,14 +14,12 @@ export class AuthService {
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new AppError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Generate tokens
     const payload: TokenPayload = {
       userId: user.id,
       username: user.username,
@@ -34,7 +31,6 @@ export class AuthService {
 
     let refreshToken: string | undefined;
 
-    // Generate long-lived refresh token if "remember me" is enabled
     if (rememberMe) {
       refreshToken = jwt.sign(payload, env.JWT_SECRET, {
         expiresIn: env.JWT_REFRESH_EXPIRES_IN,
@@ -45,6 +41,7 @@ export class AuthService {
       user: {
         id: user.id,
         username: user.username,
+        displayName: user.displayName,
       },
       accessToken,
       refreshToken,
@@ -55,7 +52,6 @@ export class AuthService {
     try {
       const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
 
-      // Verify user still exists
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
       });
@@ -64,7 +60,6 @@ export class AuthService {
         throw new AppError('User not found', 401, 'USER_NOT_FOUND');
       }
 
-      // Generate new access token
       const payload: TokenPayload = {
         userId: user.id,
         username: user.username,
@@ -78,6 +73,7 @@ export class AuthService {
         user: {
           id: user.id,
           username: user.username,
+          displayName: user.displayName,
         },
         accessToken,
       };
@@ -104,10 +100,45 @@ export class AuthService {
       return {
         id: user.id,
         username: user.username,
+        displayName: user.displayName,
       };
     } catch (error) {
       throw new AppError('Invalid token', 401, 'INVALID_TOKEN');
     }
+  }
+
+  async updateProfile(userId: string, displayName: string) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { displayName },
+    });
+
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+    };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new AppError('Current password is incorrect', 400, 'INVALID_PASSWORD');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
   }
 }
 

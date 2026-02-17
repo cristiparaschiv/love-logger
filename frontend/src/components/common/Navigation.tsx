@@ -1,24 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MapPin, Plane, Heart, Target, Sparkles, Bell, BellOff, Settings, LogOut, CircleUserRound } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { notificationClientService } from '../../services/notification.service';
 
+const navItems: { path: string; label: string; icon: ReactNode }[] = [
+  { path: '/map', label: 'Map', icon: <MapPin className="w-5 h-5" /> },
+  { path: '/vacations', label: 'Vacations', icon: <Plane className="w-5 h-5" /> },
+  { path: '/timeline', label: 'Timeline', icon: <Heart className="w-5 h-5" /> },
+  { path: '/score', label: 'Score', icon: <Target className="w-5 h-5" /> },
+  { path: '/wishlist', label: 'Wishlist', icon: <Sparkles className="w-5 h-5" /> },
+];
+
 export const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
-  const navItems = [
-    { path: '/map', label: 'Map', icon: '🗺️' },
-    { path: '/vacations', label: 'Vacations', icon: '✈️' },
-    { path: '/timeline', label: 'Timeline', icon: '❤️' },
-    { path: '/score', label: 'Score', icon: '🎯' },
-    { path: '/wishlist', label: 'Wishlist', icon: '✨' },
-  ];
-
   const [pushEnabled, setPushEnabled] = useState(notificationClientService.isSubscribed());
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setPushEnabled(notificationClientService.isSubscribed());
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   const handleTogglePush = async () => {
@@ -32,8 +47,11 @@ export const Navigation = () => {
   };
 
   const handleLogout = async () => {
+    setProfileOpen(false);
     await logout();
   };
+
+  const displayName = user?.displayName || user?.username || '';
 
   return (
     <>
@@ -41,7 +59,7 @@ export const Navigation = () => {
       <nav className="hidden md:block bg-white shadow-sm">
         <div className="container-app">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-6">
               <Link to="/map" className="text-xl font-bold text-primary-600">
                 Love Logger
               </Link>
@@ -49,34 +67,55 @@ export const Navigation = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     location.pathname === item.path
                       ? 'bg-primary-100 text-primary-700'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <span className="mr-2">{item.icon}</span>
+                  {item.icon}
                   {item.label}
                 </Link>
               ))}
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.username}!</span>
+            <div className="flex items-center space-x-3">
               {notificationClientService.isSupported() && (
                 <button
                   onClick={handleTogglePush}
-                  className="px-2 py-2 text-lg hover:bg-gray-100 rounded-md transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-md transition-colors text-gray-600"
                   title={pushEnabled ? 'Disable notifications' : 'Enable notifications'}
                 >
-                  {pushEnabled ? '🔔' : '🔕'}
+                  {pushEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
                 </button>
               )}
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                Logout
-              </button>
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md transition-colors text-gray-700"
+                >
+                  <CircleUserRound className="w-5 h-5" />
+                  <span className="text-sm font-medium">{displayName}</span>
+                </button>
+                {profileOpen && (
+                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <button
+                      onClick={() => { setProfileOpen(false); navigate('/settings'); }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </button>
+                    <hr className="my-1 border-gray-100" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -89,13 +128,13 @@ export const Navigation = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center text-xs ${
+              className={`flex flex-col items-center justify-center text-xs gap-1 ${
                 location.pathname === item.path
                   ? 'text-primary-600 bg-primary-50'
                   : 'text-gray-600'
               }`}
             >
-              <span className="text-2xl mb-1">{item.icon}</span>
+              {item.icon}
               <span>{item.label}</span>
             </Link>
           ))}
@@ -106,22 +145,22 @@ export const Navigation = () => {
       <div className="md:hidden bg-white shadow-sm border-b border-gray-200">
         <div className="flex items-center justify-between h-14 px-4">
           <h1 className="text-lg font-bold text-primary-600">Love Logger</h1>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {notificationClientService.isSupported() && (
               <button
                 onClick={handleTogglePush}
-                className="text-lg"
+                className="p-2 text-gray-600"
                 title={pushEnabled ? 'Disable notifications' : 'Enable notifications'}
               >
-                {pushEnabled ? '🔔' : '🔕'}
+                {pushEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
               </button>
             )}
-            <button
-              onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-gray-900"
+            <Link
+              to="/settings"
+              className="p-2 text-gray-600 hover:text-gray-900"
             >
-              Logout
-            </button>
+              <CircleUserRound className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </div>

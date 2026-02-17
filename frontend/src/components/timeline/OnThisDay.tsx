@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { MapPin, Heart, Plane, Calendar } from 'lucide-react';
 import { memoriesService } from '../../services/memories.service';
 import { MemoryItem } from '../../types/memories.types';
 
-const typeIcons: Record<string, string> = {
-  event: '📍',
-  timeline: '❤️',
-  vacation: '✈️',
+const typeIcons: Record<string, ReactNode> = {
+  event: <MapPin className="w-4 h-4 text-blue-500" />,
+  timeline: <Heart className="w-4 h-4 text-pink-500" />,
+  vacation: <Plane className="w-4 h-4 text-emerald-500" />,
 };
 
 export const OnThisDay = () => {
@@ -19,11 +20,14 @@ export const OnThisDay = () => {
 
   return (
     <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6">
-      <h2 className="text-lg font-bold text-amber-800 mb-3">On This Day</h2>
+      <div className="flex items-center gap-2 mb-3">
+        <Calendar className="w-5 h-5 text-amber-600" />
+        <h2 className="text-lg font-bold text-amber-800">On This Day</h2>
+      </div>
       <div className="space-y-3">
         {memories.map((memory) => (
           <div key={`${memory.type}-${memory.id}`} className="flex items-start gap-3">
-            <span className="text-xl flex-shrink-0">{typeIcons[memory.type]}</span>
+            <span className="flex-shrink-0 mt-0.5">{typeIcons[memory.type]}</span>
             <div className="flex-1 min-w-0">
               <p className="text-gray-900 font-medium">{memory.title}</p>
             </div>

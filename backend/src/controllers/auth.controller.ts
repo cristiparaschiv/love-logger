@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/auth.service';
 import { asyncHandler } from '../utils/asyncHandler';
+import { updateProfileSchema, changePasswordSchema } from '../utils/validator';
 
 export class AuthController {
   login = asyncHandler(async (req: Request, res: Response) => {
@@ -34,9 +35,29 @@ export class AuthController {
   });
 
   logout = asyncHandler(async (req: Request, res: Response) => {
-    // With JWT, logout is handled client-side by removing tokens
-    // Server-side logout would require a token blacklist (future enhancement)
     res.status(200).json({ message: 'Logged out successfully' });
+  });
+
+  updateProfile = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { displayName } = updateProfileSchema.parse(req.body);
+    const user = await authService.updateProfile(req.user.id, displayName);
+
+    res.status(200).json({ user });
+  });
+
+  changePassword = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+    await authService.changePassword(req.user.id, currentPassword, newPassword);
+
+    res.status(200).json({ message: 'Password changed successfully' });
   });
 }
 

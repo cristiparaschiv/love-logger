@@ -109,7 +109,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
 
         try {
-          const response = await apiService.get<{ user: { id: string; username: string } }>(
+          const response = await apiService.get<{ user: { id: string; username: string; displayName?: string | null } }>(
             '/auth/me'
           );
 

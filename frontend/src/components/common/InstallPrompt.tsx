@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -44,7 +45,7 @@ export const InstallPrompt = () => {
   return (
     <div className="fixed bottom-20 left-4 right-4 md:bottom-4 md:left-auto md:right-4 md:w-80 bg-white rounded-xl shadow-lg border border-red-100 p-4 z-50 animate-in slide-in-from-bottom">
       <div className="flex items-start gap-3">
-        <div className="text-2xl">❤️</div>
+        <Heart className="w-6 h-6 text-red-500 fill-red-500 flex-shrink-0" />
         <div className="flex-1">
           <p className="font-medium text-gray-900 text-sm">Add Love Logger to your home screen</p>
           <p className="text-xs text-gray-500 mt-0.5">Quick access to your memories</p>

@@ -74,6 +74,15 @@ export const relationshipConfigSchema = z.object({
   startDate: z.string().datetime().or(z.date()),
 });
 
+export const updateProfileSchema = z.object({
+  displayName: z.string().min(1, 'Display name is required').max(50, 'Display name must be less than 50 characters'),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(4, 'New password must be at least 4 characters').max(100),
+});
+
 export const pushSubscribeSchema = z.object({
   endpoint: z.string().url(),
   keys: z.object({
