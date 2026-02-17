@@ -14,6 +14,10 @@ export class PushSubscriptionRepository {
     return prisma.pushSubscription.findMany();
   }
 
+  async findExcludingUser(userId: string): Promise<PushSubscription[]> {
+    return prisma.pushSubscription.findMany({ where: { userId: { not: userId } } });
+  }
+
   async deleteByEndpoint(endpoint: string): Promise<void> {
     await prisma.pushSubscription.deleteMany({ where: { endpoint } });
   }

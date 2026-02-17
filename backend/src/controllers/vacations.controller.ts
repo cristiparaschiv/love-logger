@@ -8,6 +8,8 @@ import {
   broadcastVacationUpdated,
   broadcastVacationDeleted,
 } from '../websocket/socket.handler';
+import { notificationService } from '../services/notification.service';
+import { prisma } from '../config/database';
 
 export const getAllVacations = asyncHandler(async (_req: Request, res: Response) => {
   const vacations = await vacationService.getAllVacations();
@@ -83,6 +85,15 @@ export const createVacation = asyncHandler(async (req: Request, res: Response) =
 
   // Broadcast to all connected clients
   broadcastVacationCreated(vacation);
+
+  // Send push notification to partner
+  const actor = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true, username: true } });
+  const name = actor?.displayName || actor?.username || 'Your partner';
+  notificationService.sendToOthers(userId, {
+    title: 'New Vacation Added',
+    body: `${name} added a vacation to ${vacation.location}`,
+    url: '/vacations',
+  }).catch(() => {});
 
   return res.status(201).json({ vacation });
 });

@@ -3,6 +3,8 @@ import { scoreService } from '../services/score.service';
 import { asyncHandler } from '../utils/asyncHandler';
 import { logger } from '../utils/logger';
 import { broadcastScoreUpdated } from '../websocket/socket.handler';
+import { notificationService } from '../services/notification.service';
+import { prisma } from '../config/database';
 
 /**
  * GET /api/score
@@ -37,6 +39,15 @@ export const incrementScore = asyncHandler(async (req: Request, res: Response) =
 
   // Broadcast to all connected clients
   broadcastScoreUpdated(score);
+
+  // Send push notification to partner
+  const actor = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { displayName: true, username: true } });
+  const name = actor?.displayName || actor?.username || 'Your partner';
+  notificationService.sendToOthers(req.user!.id, {
+    title: 'Score Updated',
+    body: `${name} scored a point!`,
+    url: '/score',
+  }).catch(() => {});
 
   return res.status(200).json({ score });
 });

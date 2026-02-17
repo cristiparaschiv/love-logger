@@ -110,7 +110,7 @@ export const ScoreButton = ({ onIncrement, isDisabled = false }: ScoreButtonProp
 
       {/* Helper Text */}
       <p className="mt-4 text-center text-sm md:text-base text-gray-600">
-        Click to add a point for <span className="font-bold capitalize">{username}</span>
+        Click to add a point for <span className="font-bold capitalize">{user?.displayName || username}</span>
       </p>
 
       {/* CSS for Confetti Animation */}

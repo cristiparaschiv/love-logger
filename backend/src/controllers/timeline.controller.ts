@@ -8,6 +8,8 @@ import {
   broadcastTimelineUpdated,
   broadcastTimelineDeleted,
 } from '../websocket/socket.handler';
+import { notificationService } from '../services/notification.service';
+import { prisma } from '../config/database';
 
 export const getAllTimelineEvents = asyncHandler(async (_req: Request, res: Response) => {
   const events = await timelineService.getAllEvents();
@@ -46,6 +48,15 @@ export const createTimelineEvent = asyncHandler(async (req: Request, res: Respon
 
   // Broadcast to all connected clients
   broadcastTimelineCreated(event);
+
+  // Send push notification to partner
+  const actor = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true, username: true } });
+  const name = actor?.displayName || actor?.username || 'Your partner';
+  notificationService.sendToOthers(userId, {
+    title: 'New Timeline Event',
+    body: `${name} added a new memory`,
+    url: '/timeline',
+  }).catch(() => {});
 
   return res.status(201).json({ event });
 });

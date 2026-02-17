@@ -9,6 +9,8 @@ import wishlistRoutes from './wishlist.routes';
 import relationshipRoutes from './relationship.routes';
 import memoriesRoutes from './memories.routes';
 import notificationsRoutes from './notifications.routes';
+import { authenticate } from '../middleware/auth.middleware';
+import { prisma } from '../config/database';
 
 const router = Router();
 
@@ -22,6 +24,15 @@ router.use('/wishlist', wishlistRoutes);
 router.use('/relationship', relationshipRoutes);
 router.use('/memories', memoriesRoutes);
 router.use('/notifications', notificationsRoutes);
+
+// Users endpoint - returns both users with display names
+router.get('/users', authenticate, async (_req, res) => {
+  const users = await prisma.user.findMany({
+    select: { id: true, username: true, displayName: true },
+    orderBy: { username: 'asc' },
+  });
+  res.json({ users });
+});
 
 // Health check endpoint
 router.get('/health', (req, res) => {

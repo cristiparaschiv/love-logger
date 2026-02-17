@@ -3,9 +3,11 @@ import { Score } from '../../types/score.types';
 interface ScoreDisplayProps {
   score: Score;
   animate?: boolean;
+  heName?: string;
+  sheName?: string;
 }
 
-export const ScoreDisplay = ({ score, animate = false }: ScoreDisplayProps) => {
+export const ScoreDisplay = ({ score, animate = false, heName = 'He', sheName = 'She' }: ScoreDisplayProps) => {
   const heWinning = score.heScore > score.sheScore;
   const sheWinning = score.sheScore > score.heScore;
   const isTied = score.heScore === score.sheScore;
@@ -30,7 +32,7 @@ export const ScoreDisplay = ({ score, animate = false }: ScoreDisplayProps) => {
                   : 'text-gray-400'
               }`}
             >
-              HE
+              {heName}
             </h2>
           </div>
           <div className="px-4 md:px-8">
@@ -46,7 +48,7 @@ export const ScoreDisplay = ({ score, animate = false }: ScoreDisplayProps) => {
                   : 'text-gray-400'
               }`}
             >
-              SHE
+              {sheName}
             </h2>
           </div>
         </div>
@@ -91,12 +93,12 @@ export const ScoreDisplay = ({ score, animate = false }: ScoreDisplayProps) => {
         <div className="mt-8 text-center">
           {heWinning && (
             <p className="text-xl md:text-2xl font-bold text-blue-600 animate-pulse">
-              He is winning!
+              {heName} is winning!
             </p>
           )}
           {sheWinning && (
             <p className="text-xl md:text-2xl font-bold text-pink-600 animate-pulse">
-              She is winning!
+              {sheName} is winning!
             </p>
           )}
           {isTied && (

@@ -5,6 +5,7 @@ import { ScoreButton } from '../components/score/ScoreButton';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { useScore } from '../hooks/useScore';
+import { apiService } from '../services/api.service';
 
 export const Score = () => {
   const { score, isLoading, error, isIncrementing, incrementScore, resetScore, clearError } =
@@ -12,6 +13,20 @@ export const Score = () => {
 
   const [showAnimation, setShowAnimation] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [userNames, setUserNames] = useState<{ he: string; she: string }>({ he: 'He', she: 'She' });
+
+  useEffect(() => {
+    apiService.get<{ users: { username: string; displayName?: string | null }[] }>('/users')
+      .then(({ users }) => {
+        const heUser = users.find(u => u.username === 'he');
+        const sheUser = users.find(u => u.username === 'she');
+        setUserNames({
+          he: heUser?.displayName || 'He',
+          she: sheUser?.displayName || 'She',
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   // Trigger animation when score changes
   useEffect(() => {
@@ -90,7 +105,7 @@ export const Score = () => {
         {score && (
           <div className="space-y-8 md:space-y-12">
             {/* Scoreboard */}
-            <ScoreDisplay score={score} animate={showAnimation} />
+            <ScoreDisplay score={score} animate={showAnimation} heName={userNames.he} sheName={userNames.she} />
 
             {/* Add Point Button */}
             <div className="flex justify-center">

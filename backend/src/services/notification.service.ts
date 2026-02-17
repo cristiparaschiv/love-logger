@@ -46,6 +46,36 @@ export class NotificationService {
 
     logger.info(`Push notifications sent to ${subscriptions.length} subscribers`);
   }
+
+  async sendToOthers(excludeUserId: string, payload: { title: string; body: string; url?: string }) {
+    const subscriptions = await pushSubscriptionRepository.findExcludingUser(excludeUserId);
+    if (subscriptions.length === 0) return;
+
+    const payloadStr = JSON.stringify(payload);
+
+    const results = await Promise.allSettled(
+      subscriptions.map((sub) =>
+        webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payloadStr
+        )
+      )
+    );
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === 'rejected') {
+        const statusCode = (result.reason as { statusCode?: number })?.statusCode;
+        if (statusCode === 410 || statusCode === 404) {
+          await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
+        } else {
+          logger.error(`Push notification failed for ${subscriptions[i].endpoint}:`, result.reason);
+        }
+      }
+    }
+
+    logger.info(`Push notifications sent to ${subscriptions.length} other subscribers (excluding ${excludeUserId})`);
+  }
 }
 
 export const notificationService = new NotificationService();
