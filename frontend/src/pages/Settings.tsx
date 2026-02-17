@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { User, KeyRound, Check, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, KeyRound, Check, ArrowLeft, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/common/Layout';
 import { useAuthStore } from '../store/authStore';
 import { apiService } from '../services/api.service';
+import { checkinApiService } from '../services/checkin.service';
 
 export const Settings = () => {
   const { user, logout } = useAuthStore();
@@ -13,6 +14,31 @@ export const Settings = () => {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [profileError, setProfileError] = useState('');
+
+  // Checkin config state
+  const [checkinHour, setCheckinHour] = useState(20);
+  const [checkinSaving, setCheckinSaving] = useState(false);
+  const [checkinSuccess, setCheckinSuccess] = useState(false);
+
+  useEffect(() => {
+    checkinApiService.getConfig().then((config) => {
+      setCheckinHour(config.notificationHour);
+    }).catch(() => {});
+  }, []);
+
+  const handleCheckinSave = async () => {
+    setCheckinSaving(true);
+    setCheckinSuccess(false);
+    try {
+      await checkinApiService.updateConfig(checkinHour);
+      setCheckinSuccess(true);
+      setTimeout(() => setCheckinSuccess(false), 3000);
+    } catch {
+      // ignore
+    } finally {
+      setCheckinSaving(false);
+    }
+  };
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -209,6 +235,54 @@ export const Settings = () => {
             )}
           </button>
         </form>
+
+        {/* Daily Check-in Section */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-5 h-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Daily Check-in</h2>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="checkinHour" className="block text-sm font-medium text-gray-700 mb-1">
+              Reminder Time
+            </label>
+            <select
+              id="checkinHour"
+              value={checkinHour}
+              onChange={(e) => setCheckinHour(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-sm"
+            >
+              {Array.from({ length: 24 }, (_, i) => {
+                const hour12 = i === 0 ? 12 : i > 12 ? i - 12 : i;
+                const ampm = i < 12 ? 'AM' : 'PM';
+                return (
+                  <option key={i} value={i}>
+                    {hour12}:00 {ampm}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              You'll receive a notification at this time if you haven't checked in yet.
+            </p>
+          </div>
+
+          <button
+            onClick={handleCheckinSave}
+            disabled={checkinSaving}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 text-sm font-medium transition-colors"
+          >
+            {checkinSuccess ? (
+              <>
+                <Check className="w-4 h-4" />
+                Saved
+              </>
+            ) : (
+              checkinSaving ? 'Saving...' : 'Save'
+            )}
+          </button>
+        </div>
 
         {/* Logout */}
         <button

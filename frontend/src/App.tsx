@@ -9,6 +9,7 @@ import { Timeline } from './pages/Timeline';
 import { Score } from './pages/Score';
 import { Wishlist } from './pages/Wishlist';
 import { Settings } from './pages/Settings';
+import { Checkin } from './pages/Checkin';
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -29,6 +30,7 @@ function App() {
           <Route path="/timeline" element={<Timeline />} />
           <Route path="/score" element={<Score />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/checkin" element={<Checkin />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
 

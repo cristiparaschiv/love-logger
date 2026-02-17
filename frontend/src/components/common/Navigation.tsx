@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Plane, Heart, Target, Sparkles, Bell, BellOff, Settings, LogOut, CircleUserRound } from 'lucide-react';
+import { MapPin, Plane, Heart, Target, Sparkles, MessageCircleHeart, Bell, BellOff, Settings, LogOut, CircleUserRound } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { notificationClientService } from '../../services/notification.service';
 
@@ -10,6 +10,7 @@ const navItems: { path: string; label: string; icon: ReactNode }[] = [
   { path: '/timeline', label: 'Timeline', icon: <Heart className="w-5 h-5" /> },
   { path: '/score', label: 'Score', icon: <Target className="w-5 h-5" /> },
   { path: '/wishlist', label: 'Wishlist', icon: <Sparkles className="w-5 h-5" /> },
+  { path: '/checkin', label: 'Check-in', icon: <MessageCircleHeart className="w-5 h-5" /> },
 ];
 
 export const Navigation = () => {
@@ -123,7 +124,7 @@ export const Navigation = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="grid grid-cols-5 h-16">
+        <div className="grid grid-cols-6 h-16">
           {navItems.map((item) => (
             <Link
               key={item.path}

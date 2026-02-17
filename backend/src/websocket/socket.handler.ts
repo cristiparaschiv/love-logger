@@ -129,6 +129,10 @@ export class SocketHandler {
     this.broadcast('relationship:updated', { config });
   }
 
+  broadcastCheckinSubmitted(data: unknown) {
+    this.broadcast('checkin:submitted', data);
+  }
+
   getIO() {
     return this.io;
   }
@@ -203,4 +207,8 @@ export const broadcastWishlistDeleted = (id: string) => {
 
 export const broadcastRelationshipUpdated = (config: unknown) => {
   getSocketHandler().broadcastRelationshipUpdated(config);
+};
+
+export const broadcastCheckinSubmitted = (data: unknown) => {
+  getSocketHandler().broadcastCheckinSubmitted(data);
 };

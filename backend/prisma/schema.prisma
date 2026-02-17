@@ -22,6 +22,7 @@ model User {
   timelineEvents    TimelineEvent[]
   pushSubscriptions PushSubscription[]
   wishlistItems     WishlistItem[]
+  checkins          DailyCheckin[]
 
   @@map("users")
 }
@@ -119,4 +120,38 @@ model WishlistItem {
 
   @@index([createdById])
   @@map("wishlist_items")
+}
+
+model DailyQuestion {
+  id      Int      @id @default(autoincrement())
+  text    String
+  type    String   @default("free_text")
+  options String?
+
+  checkins DailyCheckin[]
+
+  @@map("daily_questions")
+}
+
+model DailyCheckin {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  date       String
+  mood       Int
+  questionId Int      @map("question_id")
+  answer     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question DailyQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, date])
+  @@map("daily_checkins")
+}
+
+model CheckinConfig {
+  id               String @id @default(uuid())
+  notificationHour Int    @default(20) @map("notification_hour")
+
+  @@map("checkin_config")
 }

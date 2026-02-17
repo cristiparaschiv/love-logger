@@ -9,6 +9,7 @@ import wishlistRoutes from './wishlist.routes';
 import relationshipRoutes from './relationship.routes';
 import memoriesRoutes from './memories.routes';
 import notificationsRoutes from './notifications.routes';
+import checkinRoutes from './checkin.routes';
 import { authenticate } from '../middleware/auth.middleware';
 import { prisma } from '../config/database';
 
@@ -24,6 +25,7 @@ router.use('/wishlist', wishlistRoutes);
 router.use('/relationship', relationshipRoutes);
 router.use('/memories', memoriesRoutes);
 router.use('/notifications', notificationsRoutes);
+router.use('/checkin', checkinRoutes);
 
 // Users endpoint - returns both users with display names
 router.get('/users', authenticate, async (_req, res) => {

@@ -94,3 +94,12 @@ export const pushSubscribeSchema = z.object({
 export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url(),
 });
+
+export const checkinSubmitSchema = z.object({
+  mood: z.number().int().min(1).max(5),
+  answer: z.string().min(1, 'Answer is required').max(500, 'Answer must be less than 500 characters'),
+});
+
+export const checkinConfigSchema = z.object({
+  notificationHour: z.number().int().min(0).max(23),
+});

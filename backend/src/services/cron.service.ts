@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { prisma } from '../config/database';
 import { notificationService } from './notification.service';
+import { checkinRepository } from '../repositories/checkin.repository';
 import { logger } from '../utils/logger';
 
 export function startCronJobs() {
@@ -64,6 +65,31 @@ export function startCronJobs() {
       logger.info(`Cron: ${todayCount} today, ${upcomingCount} upcoming memories`);
     } catch (error) {
       logger.error('Cron job failed:', error);
+    }
+  });
+
+  // Hourly — check-in reminder notifications
+  cron.schedule('0 * * * *', async () => {
+    try {
+      const config = await checkinRepository.getConfig();
+      const notificationHour = config?.notificationHour ?? 20;
+      const currentHour = new Date().getHours();
+
+      if (currentHour !== notificationHour) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const missingUserIds = await checkinRepository.getUsersWithoutCheckin(today);
+
+      if (missingUserIds.length > 0) {
+        await notificationService.sendToUsers(missingUserIds, {
+          title: 'Evening Check-in',
+          body: "How was your day? Share your mood and answer today's question!",
+          url: '/checkin',
+        });
+        logger.info(`Checkin reminder sent to ${missingUserIds.length} users`);
+      }
+    } catch (error) {
+      logger.error('Checkin reminder cron failed:', error);
     }
   });
 
