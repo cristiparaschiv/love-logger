@@ -10,8 +10,9 @@ const navItems: { path: string; label: string; icon: ReactNode }[] = [
   { path: '/timeline', label: 'Timeline', icon: <Heart className="w-5 h-5" /> },
   { path: '/score', label: 'Score', icon: <Target className="w-5 h-5" /> },
   { path: '/wishlist', label: 'Wishlist', icon: <Sparkles className="w-5 h-5" /> },
-  { path: '/checkin', label: 'Check-in', icon: <MessageCircleHeart className="w-5 h-5" /> },
 ];
+
+const checkinItem = { path: '/checkin', label: 'Check-in', icon: <MessageCircleHeart className="w-5 h-5" /> };
 
 export const Navigation = () => {
   const location = useLocation();
@@ -64,7 +65,7 @@ export const Navigation = () => {
               <Link to="/map" className="text-xl font-bold text-primary-600">
                 Love Logger
               </Link>
-              {navItems.map((item) => (
+              {[...navItems, checkinItem].map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -100,6 +101,13 @@ export const Navigation = () => {
                 {profileOpen && (
                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <button
+                      onClick={() => { setProfileOpen(false); navigate('/checkin'); }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <MessageCircleHeart className="w-4 h-4" />
+                      Daily Check-in
+                    </button>
+                    <button
                       onClick={() => { setProfileOpen(false); navigate('/settings'); }}
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
@@ -124,7 +132,7 @@ export const Navigation = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="grid grid-cols-6 h-16">
+        <div className="grid grid-cols-5 h-16">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -156,6 +164,12 @@ export const Navigation = () => {
                 {pushEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
               </button>
             )}
+            <Link
+              to="/checkin"
+              className={`p-2 ${location.pathname === '/checkin' ? 'text-primary-600' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <MessageCircleHeart className="w-5 h-5" />
+            </Link>
             <Link
               to="/settings"
               className="p-2 text-gray-600 hover:text-gray-900"
