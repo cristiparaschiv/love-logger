@@ -16,6 +16,9 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
       - HE_PASSWORD=${HE_PASSWORD:-}
       - SHE_PASSWORD=${SHE_PASSWORD:-}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-}
+      - VAPID_SUBJECT=${VAPID_SUBJECT:-mailto:admin@localhost}
     ports:
       - "3900:3900"
     volumes:

@@ -113,6 +113,22 @@ export class SocketHandler {
     this.broadcast('score:updated', { score });
   }
 
+  broadcastWishlistCreated(item: unknown) {
+    this.broadcast('wishlist:created', { item });
+  }
+
+  broadcastWishlistUpdated(item: unknown) {
+    this.broadcast('wishlist:updated', { item });
+  }
+
+  broadcastWishlistDeleted(id: string) {
+    this.broadcast('wishlist:deleted', { id });
+  }
+
+  broadcastRelationshipUpdated(config: unknown) {
+    this.broadcast('relationship:updated', { config });
+  }
+
   getIO() {
     return this.io;
   }
@@ -171,4 +187,20 @@ export const broadcastTimelineDeleted = (id: string) => {
 
 export const broadcastScoreUpdated = (score: unknown) => {
   getSocketHandler().broadcastScoreUpdated(score);
+};
+
+export const broadcastWishlistCreated = (item: unknown) => {
+  getSocketHandler().broadcastWishlistCreated(item);
+};
+
+export const broadcastWishlistUpdated = (item: unknown) => {
+  getSocketHandler().broadcastWishlistUpdated(item);
+};
+
+export const broadcastWishlistDeleted = (id: string) => {
+  getSocketHandler().broadcastWishlistDeleted(id);
+};
+
+export const broadcastRelationshipUpdated = (config: unknown) => {
+  getSocketHandler().broadcastRelationshipUpdated(config);
 };

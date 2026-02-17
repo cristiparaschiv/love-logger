@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { notificationClientService } from '../../services/notification.service';
 
 export const Navigation = () => {
   const location = useLocation();
@@ -10,7 +12,24 @@ export const Navigation = () => {
     { path: '/vacations', label: 'Vacations', icon: '✈️' },
     { path: '/timeline', label: 'Timeline', icon: '❤️' },
     { path: '/score', label: 'Score', icon: '🎯' },
+    { path: '/wishlist', label: 'Wishlist', icon: '✨' },
   ];
+
+  const [pushEnabled, setPushEnabled] = useState(notificationClientService.isSubscribed());
+
+  useEffect(() => {
+    setPushEnabled(notificationClientService.isSubscribed());
+  }, []);
+
+  const handleTogglePush = async () => {
+    if (pushEnabled) {
+      const success = await notificationClientService.unsubscribe();
+      if (success) setPushEnabled(false);
+    } else {
+      const success = await notificationClientService.requestPermissionAndSubscribe();
+      if (success) setPushEnabled(true);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -43,6 +62,15 @@ export const Navigation = () => {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, {user?.username}!</span>
+              {notificationClientService.isSupported() && (
+                <button
+                  onClick={handleTogglePush}
+                  className="px-2 py-2 text-lg hover:bg-gray-100 rounded-md transition-colors"
+                  title={pushEnabled ? 'Disable notifications' : 'Enable notifications'}
+                >
+                  {pushEnabled ? '🔔' : '🔕'}
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
@@ -56,7 +84,7 @@ export const Navigation = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="grid grid-cols-4 h-16">
+        <div className="grid grid-cols-5 h-16">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -78,12 +106,23 @@ export const Navigation = () => {
       <div className="md:hidden bg-white shadow-sm border-b border-gray-200">
         <div className="flex items-center justify-between h-14 px-4">
           <h1 className="text-lg font-bold text-primary-600">Love Logger</h1>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-gray-600 hover:text-gray-900"
-          >
-            Logout
-          </button>
+          <div className="flex items-center space-x-2">
+            {notificationClientService.isSupported() && (
+              <button
+                onClick={handleTogglePush}
+                className="text-lg"
+                title={pushEnabled ? 'Disable notifications' : 'Enable notifications'}
+              >
+                {pushEnabled ? '🔔' : '🔕'}
+              </button>
+            )}
+            <button
+              onClick={handleLogout}
+              className="text-sm text-gray-600 hover:text-gray-900"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </>

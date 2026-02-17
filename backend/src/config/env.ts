@@ -14,6 +14,9 @@ const envSchema = z.object({
   GEOCODING_API_URL: z.string().url().default('https://nominatim.openstreetmap.org'),
   MAX_FILE_SIZE: z.string().transform(Number).default('10485760'), // 10MB
   UPLOAD_DIR: z.string().default('./uploads'),
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT: z.string().default('mailto:admin@localhost'),
 });
 
 function validateEnv() {

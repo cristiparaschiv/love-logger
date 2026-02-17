@@ -58,3 +58,30 @@ export const timelineEventUpdateSchema = z.object({
 export const scoreIncrementSchema = z.object({
   user: z.enum(['he', 'she']),
 });
+
+export const wishlistItemSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
+  description: z.string().max(500).optional().nullable(),
+});
+
+export const wishlistItemUpdateSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(500).optional().nullable(),
+  completed: z.boolean().optional(),
+});
+
+export const relationshipConfigSchema = z.object({
+  startDate: z.string().datetime().or(z.date()),
+});
+
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string(),
+    auth: z.string(),
+  }),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().url(),
+});

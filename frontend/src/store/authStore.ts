@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { AuthState, LoginRequest, LoginResponse } from '../types/auth.types';
 import { apiService } from '../services/api.service';
 import { websocketService } from '../services/websocket.service';
+import { notificationClientService } from '../services/notification.service';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
@@ -45,6 +46,13 @@ export const useAuthStore = create<AuthStore>()(
 
           // Connect to WebSocket
           websocketService.connect(response.accessToken);
+
+          // Auto-subscribe to push notifications (non-blocking)
+          if (!notificationClientService.isSubscribed() && notificationClientService.isSupported()) {
+            setTimeout(() => {
+              notificationClientService.requestPermissionAndSubscribe().catch(() => {});
+            }, 2000);
+          }
         } catch (error: unknown) {
           const message =
             error instanceof Error

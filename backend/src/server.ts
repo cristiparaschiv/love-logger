@@ -3,6 +3,8 @@ import { createApp } from './app';
 import { env } from './config/env';
 import { prisma } from './config/database';
 import { initializeSocketHandler } from './websocket/socket.handler';
+import { initVapid } from './config/vapid';
+import { startCronJobs } from './services/cron.service';
 import { logger } from './utils/logger';
 
 const app = createApp();
@@ -44,6 +46,9 @@ const startServer = async () => {
     // Test database connection
     await prisma.$connect();
     logger.info('Database connected successfully');
+
+    initVapid();
+    startCronJobs();
 
     // Start listening
     server.listen(env.PORT, () => {

@@ -16,9 +16,11 @@ model User {
   passwordHash  String   @map("password_hash")
   createdAt     DateTime @default(now()) @map("created_at")
 
-  events        Event[]
-  vacations     Vacation[]
-  timelineEvents TimelineEvent[]
+  events            Event[]
+  vacations         Vacation[]
+  timelineEvents    TimelineEvent[]
+  pushSubscriptions PushSubscription[]
+  wishlistItems     WishlistItem[]
 
   @@map("users")
 }
@@ -80,4 +82,40 @@ model Score {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("scores")
+}
+
+model PushSubscription {
+  id       String @id @default(uuid())
+  userId   String @map("user_id")
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model RelationshipConfig {
+  id        String   @id @default(uuid())
+  startDate DateTime @map("start_date")
+
+  @@map("relationship_config")
+}
+
+model WishlistItem {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@map("wishlist_items")
 }

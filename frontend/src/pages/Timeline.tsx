@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Layout } from '../components/common/Layout';
 import { TimelineView } from '../components/timeline/TimelineView';
 import { TimelineForm } from '../components/timeline/TimelineForm';
+import { RelationshipCountdown } from '../components/timeline/RelationshipCountdown';
+import { OnThisDay } from '../components/timeline/OnThisDay';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { useTimeline } from '../hooks/useTimeline';
@@ -77,6 +79,12 @@ export const Timeline = () => {
             Add Event
           </Button>
         </div>
+
+        {/* Relationship Countdown */}
+        <RelationshipCountdown />
+
+        {/* On This Day Memories */}
+        <OnThisDay />
 
         {/* Error Message */}
         {error && (
