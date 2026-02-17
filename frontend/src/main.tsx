@@ -6,10 +6,26 @@ import 'leaflet/dist/leaflet.css';
 
 // Register service worker manually (injectManifest strategy)
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+
+      // Check for updates every 60 minutes
+      setInterval(() => {
+        registration.update();
+      }, 60 * 60 * 1000);
+
+      // When a new SW is found and activated, reload to get fresh assets
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    } catch (err) {
       console.error('SW registration failed:', err);
-    });
+    }
   });
 }
 
