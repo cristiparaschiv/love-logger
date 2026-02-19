@@ -2,6 +2,11 @@ import webpush from 'web-push';
 import { pushSubscriptionRepository } from '../repositories/pushSubscription.repository';
 import { logger } from '../utils/logger';
 
+const pushOptions: webpush.RequestOptions = {
+  urgency: 'high',
+  TTL: 60 * 60 * 24, // 24 hours
+};
+
 export class NotificationService {
   async subscribe(data: { userId: string; endpoint: string; p256dh: string; auth: string }) {
     await pushSubscriptionRepository.upsertByEndpoint(data);
@@ -26,7 +31,8 @@ export class NotificationService {
             endpoint: sub.endpoint,
             keys: { p256dh: sub.p256dh, auth: sub.auth },
           },
-          payloadStr
+          payloadStr,
+          pushOptions
         )
       )
     );

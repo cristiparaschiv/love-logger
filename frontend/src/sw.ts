@@ -46,20 +46,28 @@ registerRoute(
 
 // Push notification handler
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  let title = 'Love Logger';
+  let options: NotificationOptions = {
+    body: '',
+    icon: '/pwa-192x192.png',
+    badge: '/pwa-192x192.png',
+    tag: 'love-logger',
+    data: { url: '/timeline' },
+  };
 
   try {
-    const payload = event.data.json();
-    const options: NotificationOptions = {
-      body: payload.body || '',
-      icon: '/pwa-192x192.png',
-      data: { url: payload.url || '/timeline' },
-    };
-
-    event.waitUntil(self.registration.showNotification(payload.title || 'Love Logger', options));
+    if (event.data) {
+      const payload = event.data.json();
+      title = payload.title || title;
+      options.body = payload.body || '';
+      options.data = { url: payload.url || '/timeline' };
+    }
   } catch {
-    // ignore malformed payloads
+    // use defaults for malformed payloads
   }
+
+  // iOS requires every push event to show a notification — never skip waitUntil
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 // Notification click handler
