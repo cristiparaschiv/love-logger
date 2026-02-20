@@ -41,7 +41,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
           logger.info(`Removed expired push subscription: ${subscriptions[i].endpoint}`);
         } else {
@@ -73,7 +73,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
         } else {
           logger.error(`Push notification failed for ${subscriptions[i].endpoint}:`, result.reason);
@@ -104,7 +104,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
         } else {
           logger.error(`Push notification failed for ${subscriptions[i].endpoint}:`, result.reason);
