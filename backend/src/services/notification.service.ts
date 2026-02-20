@@ -41,7 +41,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 410 || statusCode === 404) {
+        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
           logger.info(`Removed expired push subscription: ${subscriptions[i].endpoint}`);
         } else {
@@ -63,7 +63,8 @@ export class NotificationService {
       subscriptions.map((sub) =>
         webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          payloadStr
+          payloadStr,
+          pushOptions
         )
       )
     );
@@ -72,7 +73,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 410 || statusCode === 404) {
+        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
         } else {
           logger.error(`Push notification failed for ${subscriptions[i].endpoint}:`, result.reason);
@@ -93,7 +94,8 @@ export class NotificationService {
       subscriptions.map((sub) =>
         webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          payloadStr
+          payloadStr,
+          pushOptions
         )
       )
     );
@@ -102,7 +104,7 @@ export class NotificationService {
       const result = results[i];
       if (result.status === 'rejected') {
         const statusCode = (result.reason as { statusCode?: number })?.statusCode;
-        if (statusCode === 410 || statusCode === 404) {
+        if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
           await pushSubscriptionRepository.deleteByEndpoint(subscriptions[i].endpoint);
         } else {
           logger.error(`Push notification failed for ${subscriptions[i].endpoint}:`, result.reason);
