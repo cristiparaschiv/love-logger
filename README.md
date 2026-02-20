@@ -24,7 +24,9 @@ Pin memories on a map, plan vacations, document your story, and keep score — a
 - **Interactive Map** — Pin geotagged memories anywhere in the world. Tap a location, add a note, and it's automatically reverse-geocoded to a city name via OpenStreetMap.
 - **Vacation Planner** — Track upcoming and past trips with photo uploads and a live countdown to your next adventure.
 - **Timeline** — Document your relationship milestones in a beautiful chronological "Our Story" view.
+- **Daily Check-in** — Daily mood tracking and couple questions with partner reveal. Includes a Trends dashboard with mood charts, streaks, distribution, and auto-generated insights.
 - **Score Tracker** — A playful shared scoreboard between partners. Tap to score, compete for fun.
+- **Push Notifications** — Native push notifications on iOS and Android via Web Push. Get notified when your partner checks in, adds a memory, or when daily reminders fire.
 - **Real-Time Sync** — Every change is pushed instantly to both users via WebSocket. No refresh needed.
 - **PWA** — Installable on mobile and desktop with offline support. Caches map tiles, uploads, and API responses.
 - **Self-Hosted** — Your data stays yours. Runs on Docker with a single `docker-compose up`.
@@ -38,6 +40,7 @@ Pin memories on a map, plan vacations, document your story, and keep score — a
 | **Backend** | Express 4, Prisma 5, SQLite, Socket.IO 4, Zod |
 | **Map** | Leaflet + react-leaflet, OpenStreetMap Nominatim |
 | **Auth** | JWT (access + refresh tokens), bcrypt |
+| **Push** | web-push (VAPID), Web Push API |
 | **Infra** | Docker multi-stage builds, Nginx reverse proxy |
 | **PWA** | vite-plugin-pwa, Workbox |
 
@@ -142,13 +145,15 @@ All endpoints are under `/api` and require JWT authentication (except login and 
 | `GET/POST/PUT/DELETE` | `/api/vacations` | Vacations |
 | `GET/POST/PUT/DELETE` | `/api/timeline` | Timeline events |
 | `GET/POST` | `/api/score` | Score tracker |
+| `GET/POST` | `/api/checkin` | Daily check-in (today, submit, history, stats) |
+| `GET/POST` | `/api/notifications` | Push subscription management |
 | `GET` | `/api/geocode` | Reverse geocoding |
 | `GET` | `/api/health` | Health check |
 
 ### WebSocket Events
 
 All changes broadcast in real-time:
-`event:created` `event:updated` `event:deleted` `vacation:created` `vacation:updated` `vacation:deleted` `timeline:created` `timeline:updated` `timeline:deleted` `score:updated`
+`event:created` `event:updated` `event:deleted` `vacation:created` `vacation:updated` `vacation:deleted` `timeline:created` `timeline:updated` `timeline:deleted` `score:updated` `checkin:submitted`
 
 ## PWA
 
@@ -158,6 +163,7 @@ Love Logger is a fully installable Progressive Web App:
 - **Runtime caching** — API responses (NetworkFirst), uploaded photos (CacheFirst, 30 days), map tiles (CacheFirst, 30 days, up to 500 tiles)
 - **Install prompt** — Dismissible banner prompts home screen installation
 - **Share target** — Share photos and text directly to Love Logger from other apps
+- **Push notifications** — Native push on iOS (16.4+) and Android via VAPID / Web Push
 
 ## Data & Backups
 
@@ -181,6 +187,9 @@ SQLite database is stored in a Docker volume at `/app/data/love-logger.db`.
 | `DATABASE_URL` | `file:./dev.db` | Prisma database URL |
 | `FRONTEND_URL` | `http://localhost:5173` | CORS origin |
 | `GEOCODING_API_URL` | `https://nominatim.openstreetmap.org` | Nominatim instance |
+| `VAPID_PUBLIC_KEY` | — | VAPID public key for push notifications (generate with `npx web-push generate-vapid-keys`) |
+| `VAPID_PRIVATE_KEY` | — | VAPID private key (must persist across restarts) |
+| `VAPID_SUBJECT` | `mailto:admin@localhost` | VAPID subject — must be a real `mailto:` email for iOS push to work |
 | `VITE_API_URL` | `http://localhost:3000/api` | Frontend API base URL |
 | `VITE_WS_URL` | `http://localhost:3000` | Frontend WebSocket URL |
 
