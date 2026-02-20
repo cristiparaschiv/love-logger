@@ -23,10 +23,10 @@ class NotificationClientService {
       // Get VAPID public key from backend
       const { publicKey } = await apiService.get<{ publicKey: string }>('/notifications/vapid-public-key');
 
-      const applicationServerKey = this.urlBase64ToUint8Array(publicKey);
+      const keyArray = this.urlBase64ToUint8Array(publicKey);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey,
+        applicationServerKey: keyArray.buffer as ArrayBuffer,
       });
 
       const subJson = subscription.toJSON();
